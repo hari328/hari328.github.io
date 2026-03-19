@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harish — Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:     #fdf6ec;
+  --bg2:    #f5ead8;
+  --text:   #1a1a1a;
+  --muted:  #6b6b6b;
+  --border: #e5e2dd;
+  --serif:  'Lora', Georgia, serif;
+  --sans:   'Inter', system-ui, sans-serif;
+
+  --tech:        #2c4a9e;
+  --tech-bg:     #eef1fb;
+  --trek:        #1e6641;
+  --trek-bg:     #e8f5ee;
+  --health:      #8c3a1a;
+  --health-bg:   #fbeee8;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+a { color: inherit; text-decoration: none; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ── NAV ── */
+nav {
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  position: sticky; top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+nav .inner {
+  max-width: 860px; margin: 0 auto;
+  display: flex; align-items: center;
+  justify-content: space-between; height: 56px;
+}
+nav .logo {
+  font-family: var(--serif);
+  font-size: 1.05rem; font-weight: 600;
+  color: var(--text); letter-spacing: 0.01em;
+}
+nav ul { list-style: none; display: flex; }
+nav ul li a {
+  display: block; padding: 0 1rem;
+  height: 56px; line-height: 56px;
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+nav ul li a:hover  { color: var(--text); }
+nav ul li a.active { color: var(--text); border-bottom-color: var(--text); }
+
+/* ── SHARED ── */
+main { max-width: 860px; margin: 0 auto; padding: 0 2rem; }
+
+/* ── HERO ── */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 4rem;
+  align-items: center;
+  padding: 4.5rem 0 4rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero-eyebrow {
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--trek); margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.4rem, 5vw, 3.2rem);
+  font-weight: 600; line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin-bottom: 1.1rem;
+}
+.hero-bio {
+  font-size: 1rem; color: var(--muted);
+  line-height: 1.8; margin-bottom: 2rem;
+}
+.hero-bio strong { color: var(--text); font-weight: 500; }
+.hero-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.btn-primary {
+  font-size: 0.82rem; font-weight: 600;
+  padding: 8px 20px; border-radius: 6px;
+  background: var(--text); color: var(--bg);
+  transition: opacity 0.15s;
+}
+.btn-primary:hover { opacity: 0.8; }
+.btn-ghost {
+  font-size: 0.82rem; font-weight: 500;
+  padding: 8px 20px; border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: all 0.15s;
+}
+.btn-ghost:hover { border-color: #aaa; color: var(--text); }
+
+/* Photo */
+.hero-photo-wrap { position: relative; display: flex; justify-content: center; align-items: center; }
+.hero-photo {
+  width: 260px; height: 260px;
+  object-fit: cover; object-position: center 25%;
+  border-radius: 50%;
+  display: block;
+  box-shadow: 0 0 0 6px var(--border), 0 0 0 12px var(--bg2);
+}
+
+/* ── HOME FEED ── */
+.feed-block { padding: 2.8rem 0; border-bottom: 1px solid var(--border); }
+.feed-block:last-child { border-bottom: none; }
+.feed-head {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+.feed-title {
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted);
+}
+.feed-all {
+  font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; transition: color 0.15s;
+}
+.feed-all.tech   { color: var(--tech); }
+.feed-all.trek   { color: var(--trek); }
+.feed-all.health { color: var(--health); }
+.feed-all:hover { opacity: 0.7; }
+
+.feed-list { list-style: none; }
+.feed-item {
+  display: flex; align-items: baseline;
+  justify-content: space-between; gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-item-title {
+  font-size: 0.92rem; color: var(--text);
+  transition: color 0.15s; line-height: 1.4;
+}
+.feed-item:hover .feed-item-title { color: var(--tech); }
+.feed-item.trek:hover .feed-item-title { color: var(--trek); }
+.feed-item.health:hover .feed-item-title { color: var(--health); }
+.feed-item-date { font-size: 0.75rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+
+/* ── INNER PAGES ── */
+.page-header {
+  padding: 3.5rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.page-header h1 {
+  font-family: var(--serif);
+  font-size: 2rem; font-weight: 600;
+  letter-spacing: -0.02em; margin-bottom: 0.4rem;
+}
+.page-header p { font-size: 0.9rem; color: var(--muted); }
+
+.post-list { list-style: none; }
+.post-item {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 0.3rem 1.5rem; align-items: start;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.post-item-title {
+  font-size: 0.98rem; font-weight: 500;
+  color: var(--text); transition: color 0.15s; line-height: 1.4;
+}
+.post-item:hover .post-item-title { color: var(--tech); }
+.post-item.trek:hover .post-item-title { color: var(--trek); }
+.post-item-excerpt { font-size: 0.84rem; color: var(--muted); line-height: 1.5; grid-column: 1; margin-top: 0.2rem; }
+.post-item-date { font-size: 0.76rem; color: var(--muted); white-space: nowrap; }
+
+/* ── TAG ── */
+.tag {
+  display: inline-block; font-size: 0.68rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 4px; margin-bottom: 0.9rem;
+}
+.tag-tech   { color: var(--tech);   background: var(--tech-bg); }
+.tag-trek   { color: var(--trek);   background: var(--trek-bg); }
+.tag-health { color: var(--health); background: var(--health-bg); }
+
+/* ── RESUME ── */
+.resume-header {
+  padding: 3.5rem 0 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+.resume-header h1 {
+  font-family: var(--serif);
+  font-size: 2rem; font-weight: 600; letter-spacing: -0.02em;
+  margin-bottom: 0.3rem;
+}
+.resume-header p { font-size: 0.85rem; color: var(--muted); }
+
+.r-section { margin-top: 2.5rem; }
+.r-title {
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+}
+.job { display: grid; grid-template-columns: 1fr auto; gap: 0.15rem 1rem; margin-bottom: 1.8rem; }
+.job-title { font-weight: 600; font-size: 0.92rem; }
+.job-co { font-size: 0.84rem; color: var(--muted); }
+.job-date { font-size: 0.78rem; color: var(--muted); text-align: right; white-space: nowrap; }
+.job-desc { grid-column: 1/-1; font-size: 0.85rem; color: var(--muted); margin-top: 0.3rem; line-height: 1.6; }
+.skill-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.skill {
+  font-size: 0.78rem; font-weight: 500;
+  padding: 4px 12px; border-radius: 20px;
+  background: var(--bg2); color: var(--text);
+  border: 1px solid var(--border);
+}
+
+/* ── POST ── */
+.post-header {
+  padding: 3.5rem 0 2rem;
+  border-bottom: 1px solid var(--border); margin-bottom: 2rem;
+}
+.post-header h1 {
+  font-family: var(--serif);
+  font-size: 1.9rem; font-weight: 600;
+  letter-spacing: -0.02em; line-height: 1.25; margin-bottom: 0.8rem;
+}
+.post-meta { font-size: 0.8rem; color: var(--muted); display: flex; gap: 1rem; }
+.post-body { max-width: 660px; }
+.post-body h2 {
+  font-family: var(--serif);
+  font-size: 1.2rem; font-weight: 600; margin: 2rem 0 0.7rem;
+}
+.post-body p { font-size: 0.95rem; line-height: 1.85; color: #333; margin-bottom: 1.2rem; }
+.post-body code {
+  font-family: monospace; font-size: 0.82rem;
+  background: var(--bg2); padding: 2px 6px; border-radius: 3px;
+}
+.back-link {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.82rem; color: var(--muted);
+  margin: 1.5rem 0; transition: color 0.15s;
+}
+.back-link:hover { color: var(--tech); }
+
+/* ── FOOTER ── */
+footer {
+  margin-top: 5rem; border-top: 1px solid var(--border); padding: 2rem;
+}
+footer .inner {
+  max-width: 860px; margin: 0 auto;
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 0.5rem;
+}
+footer span { font-size: 0.78rem; color: var(--muted); }
+footer a { font-size: 0.78rem; color: var(--muted); transition: color 0.15s; }
+footer a:hover { color: var(--text); }
+
+/* ── PREVIEW BAR ── */
+.preview-bar {
+  background: #1a1a1a; font-size: 0.72rem; font-family: var(--sans);
+  padding: 7px 1.5rem; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;
+}
+.preview-bar span { color: #555; margin-right: 0.2rem; }
+.pbtn {
+  background: none; border: 1px solid #333; color: #888;
+  padding: 3px 10px; border-radius: 4px; font-size: 0.72rem;
+  cursor: pointer; font-family: var(--sans); transition: all 0.15s;
+}
+.pbtn:hover, .pbtn.active { background: #2a2a2a; border-color: #555; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- PREVIEW BAR -->
+<div class="preview-bar">
+  <span>PAGE</span>
+  <button class="pbtn active" onclick="show('home',this)">Home</button>
+  <button class="pbtn" onclick="show('resume',this)">Resume</button>
+  <button class="pbtn" onclick="show('tech',this)">Tech</button>
+  <button class="pbtn" onclick="show('trekking',this)">Trekking</button>
+  <button class="pbtn" onclick="show('post',this)">Blog post</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <a href="#" class="logo">Harish</a>
+    <ul>
+      <li><a href="#" onclick="show('home',null)" class="active" id="nav-home">Home</a></li>
+      <li><a href="#" onclick="show('resume',null)" id="nav-resume">Resume</a></li>
+      <li><a href="#" onclick="show('tech',null)" id="nav-tech">Tech</a></li>
+      <li><a href="#" onclick="show('trekking',null)" id="nav-trekking">Trekking</a></li>
+      <li><a href="#" onclick="show('health',null)" id="nav-health">Health</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ══ HOME ══ -->
+<div id="home" class="section active">
+<main>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="hero-eyebrow">Developer · Trekker · Writer</div>
+      <h1>Hi, I'm Harish.</h1>
+      <p class="hero-bio">
+        I build <strong>distributed systems</strong> and write about the
+        engineering problems I encounter — from <strong>banking infrastructure</strong>
+        to DevOps. Outside of work, I trek mountains and run in the mornings.
+      </p>
+      <div class="hero-actions">
+        <a href="#" class="btn-primary" onclick="show('resume',null)">Resume</a>
+        <a href="https://github.com/hari328" target="_blank" class="btn-ghost">GitHub</a>
+        <a href="mailto:harish.hi12321@gmail.com" class="btn-ghost">Email</a>
+      </div>
+    </div>
+    <div class="hero-photo-wrap">
+      <img class="hero-photo" src="assets/images/harish-profile.png" alt="Harish">
+    </div>
+  </div>
+
+  <!-- FEED: Tech -->
+  <div class="feed-block">
+    <div class="feed-head">
+      <span class="feed-title">Tech Writing</span>
+      <span class="feed-all tech" onclick="show('tech',null)">All posts →</span>
+    </div>
+    <ul class="feed-list">
+      <li class="feed-item" onclick="show('post',null)">
+        <span class="feed-item-title">Understanding Banking Systems Architecture</span>
+        <span class="feed-item-date">Mar 2025</span>
+      </li>
+      <li class="feed-item">
+        <span class="feed-item-title">Learning DevOps: A Developer's Perspective</span>
+        <span class="feed-item-date">Feb 2025</span>
+      </li>
+      <li class="feed-item">
+        <span class="feed-item-title">Temporal: Durable Execution for the Real World</span>
+        <span class="feed-item-date">Dec 2024</span>
+      </li>
+      <li class="feed-item">
+        <span class="feed-item-title">Running Tansu in Production</span>
+        <span class="feed-item-date">Nov 2024</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- FEED: Trekking -->
+  <div class="feed-block">
+    <div class="feed-head">
+      <span class="feed-title">Trekking</span>
+      <span class="feed-all trek" onclick="show('trekking',null)">All posts →</span>
+    </div>
+    <ul class="feed-list">
+      <li class="feed-item trek">
+        <span class="feed-item-title">Kodachadri — First Solo Trek</span>
+        <span class="feed-item-date">Jan 2025</span>
+      </li>
+      <li class="feed-item trek">
+        <span class="feed-item-title">Kumara Parvatha — A Hard Lesson in Preparation</span>
+        <span class="feed-item-date">Oct 2024</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- FEED: Health -->
+  <div class="feed-block" style="margin-bottom:3rem">
+    <div class="feed-head">
+      <span class="feed-title">Running &amp; Health</span>
+      <span class="feed-all health" onclick="show('health',null)">All posts →</span>
+    </div>
+    <ul class="feed-list">
+      <li class="feed-item health">
+        <span class="feed-item-title">My Running &amp; Diet System</span>
+        <span class="feed-item-date">Jan 2025</span>
+      </li>
+    </ul>
+  </div>
+
+</main>
+</div>
+
+<!-- ══ RESUME ══ -->
+<div id="resume" class="section">
+<main>
+  <div class="resume-header">
+    <div>
+      <h1>S Harish</h1>
+      <p>Staff Software Engineer · Bengaluru, India · harish.hi12321@gmail.com</p>
+    </div>
+  </div>
+
+  <div class="r-section">
+    <div class="r-title">Experience</div>
+
+    <div class="job">
+      <div><div class="job-title">Staff Software Engineer</div><div class="job-co">Caring.com</div></div>
+      <div class="job-date">Apr 2025 – Present · Remote, USA</div>
+      <div class="job-desc">Delivered $400K+ in combined annual savings through strategic vendor deprecation while single-handedly re-platforming a critical business vertical in 3 months, contributing to 2x growth in move-ins. Hand-picked by CTO to co-lead India engineering entity (8 engineers). Deprecated Algolia search ($200K+ savings) and led migration off Magnolia CMS ($200K+ savings).<br><br><em>TypeScript, Next.js, PostgreSQL, HubSpot, Ruby on Rails, AWS</em></div>
+    </div>
+
+    <div class="job">
+      <div><div class="job-title">Tech Lead Manager</div><div class="job-co">Xcaliber Health</div></div>
+      <div class="job-date">Jan 2024 – Dec 2024 · Remote, USA</div>
+      <div class="job-desc">Led Services division; bootstrapped and led a cross-functional team of 10 (8 Developers, 2 QA) for U.S. hospital RCM automation. Built v2 of the product in 6 months, enabling 5x scale and new customer onboarding.<br><br><em>Java, Spring, Postgres, AWS, Temporal, Camunda, AWS Bedrock</em></div>
+    </div>
+
+    <div class="job">
+      <div><div class="job-title">Staff Software Developer</div><div class="job-co">Epifi (Neo Bank)</div></div>
+      <div class="job-date">Aug 2022 – Jul 2023 · Bengaluru, India</div>
+      <div class="job-desc">Tech Lead of Payments team. Built a US stock trading platform for Indian customers in 6 months. Designed SWIFT international payments integration and revamped Standing Instructions product used by all internal teams.<br><br><em>Go, gRPC, CockroachDB, Postgres, Redis, Temporal</em></div>
+    </div>
+
+    <div class="job">
+      <div><div class="job-title">Senior Member of Technical Staff</div><div class="job-co">AthenaHealth</div></div>
+      <div class="job-date">Jul 2020 – Jul 2022 · Bengaluru, India</div>
+      <div class="job-desc">Built a quick analytics platform for hospital revenue and performance dashboards with load time &lt;1s, reducing cost of analytics product by 10x. Designed ETL pipelines from Snowflake to Druid processing ~1TB of data daily.<br><br><em>Java, Spring, Node.js, AWS, Snowflake, Druid, Postgres, Redis</em></div>
+    </div>
+
+    <div class="job">
+      <div><div class="job-title">Software Engineer</div><div class="job-co">Walmartlabs</div></div>
+      <div class="job-date">May 2019 – Jun 2020 · Bengaluru, India</div>
+      <div class="job-desc">Built "Ship From Club" — an Android app enabling store workers to pack and fulfill orders from nearby Walmart stores. Implemented printer-mobile and Bluetooth weight scale integration, unblocking a critical product launch.<br><br><em>Java, Spring, Azure SQL, Kafka, Android, React Native</em></div>
+    </div>
+
+    <div class="job">
+      <div><div class="job-title">Software Engineer</div><div class="job-co">AthenaHealth</div></div>
+      <div class="job-date">Jan 2018 – Apr 2019 · Bengaluru, India</div>
+      <div class="job-desc">Built Datalens — a REST API abstraction layer for data retrieval from multiple sources with security and throttling. Improved query performance through indexing and benchmarking.<br><br><em>Java, Spring, Node.js, AWS, Cassandra, Redis, Snowflake</em></div>
+    </div>
+
+    <div class="job">
+      <div><div class="job-title">Application Developer</div><div class="job-co">Thoughtworks</div></div>
+      <div class="job-date">Jul 2014 – Dec 2017 · Bengaluru, India</div>
+      <div class="job-desc">Backend developer on a pricing platform for multi-retail chains managing millions of products across geographic locations. Built microservices, a Docker-based local dev framework, and drove active codebase refactoring.<br><br><em>Java, Golang, REST API, Microservices, React, Redux, Android</em></div>
+    </div>
+  </div>
+
+  <div class="r-section">
+    <div class="r-title">Skills</div>
+    <div class="skill-grid">
+      <span class="skill">Golang</span><span class="skill">Java</span>
+      <span class="skill">TypeScript</span><span class="skill">Node.js</span>
+      <span class="skill">Python</span><span class="skill">Ruby on Rails</span>
+      <span class="skill">PostgreSQL</span><span class="skill">Cassandra</span>
+      <span class="skill">Redis</span><span class="skill">Kafka</span>
+      <span class="skill">Snowflake</span><span class="skill">CockroachDB</span>
+      <span class="skill">Temporal</span><span class="skill">Kubernetes</span>
+      <span class="skill">Docker</span><span class="skill">AWS</span>
+      <span class="skill">gRPC</span><span class="skill">Druid</span>
+    </div>
+  </div>
+
+  <div class="r-section" style="margin-bottom:3rem">
+    <div class="r-title">Education</div>
+    <div class="job">
+      <div><div class="job-title">B.E. Computer Science</div><div class="job-co">Sir MVIT, Bengaluru</div></div>
+      <div class="job-date">2010 – 2014</div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ══ TECH ══ -->
+<div id="tech" class="section">
+<main>
+  <div class="page-header">
+    <h1>Tech</h1>
+    <p>Writing about distributed systems, DevOps, banking infrastructure, and developer tools.</p>
+  </div>
+  <ul class="post-list">
+    <li class="post-item" onclick="show('post',null)">
+      <div><div class="post-item-title">Understanding Banking Systems Architecture</div><div class="post-item-excerpt">How modern core banking systems are layered, from ledger to API gateway.</div></div>
+      <div class="post-item-date">Mar 2025</div>
+    </li>
+    <li class="post-item">
+      <div><div class="post-item-title">Learning DevOps: A Developer's Perspective</div><div class="post-item-excerpt">Notes from my journey into CI/CD, containers, and infrastructure as code.</div></div>
+      <div class="post-item-date">Feb 2025</div>
+    </li>
+    <li class="post-item">
+      <div><div class="post-item-title">Developer Outlook for 2025</div><div class="post-item-excerpt">What I think matters in software engineering right now.</div></div>
+      <div class="post-item-date">Jan 2025</div>
+    </li>
+    <li class="post-item">
+      <div><div class="post-item-title">Temporal: Durable Execution for the Real World</div><div class="post-item-excerpt">Why Temporal is one of the most underrated tools in backend engineering.</div></div>
+      <div class="post-item-date">Dec 2024</div>
+    </li>
+    <li class="post-item" style="margin-bottom:3rem">
+      <div><div class="post-item-title">Running Tansu in Production</div><div class="post-item-excerpt">Lessons from deploying and operating Tansu at scale.</div></div>
+      <div class="post-item-date">Nov 2024</div>
+    </li>
+  </ul>
+</main>
+</div>
+
+<!-- ══ TREKKING ══ -->
+<div id="trekking" class="section">
+<main>
+  <div class="page-header">
+    <h1>Trekking</h1>
+    <p>Trip logs, route notes, and lessons from the trail.</p>
+  </div>
+  <ul class="post-list">
+    <li class="post-item trek">
+      <div><div class="post-item-title">Kodachadri — First Solo Trek</div><div class="post-item-excerpt">Three days in the Western Ghats with nothing but a pack and bad weather.</div></div>
+      <div class="post-item-date">Jan 2025</div>
+    </li>
+    <li class="post-item trek" style="margin-bottom:3rem">
+      <div><div class="post-item-title">Kumara Parvatha — A Hard Lesson in Preparation</div><div class="post-item-excerpt">What goes wrong when you underestimate a 13 km ascent.</div></div>
+      <div class="post-item-date">Oct 2024</div>
+    </li>
+  </ul>
+</main>
+</div>
+
+<!-- ══ POST ══ -->
+<div id="post" class="section">
+<main>
+  <a href="#" class="back-link" onclick="show('tech',null)">← Tech</a>
+  <div class="post-header">
+    <span class="tag tag-tech">Tech</span>
+    <h1>Understanding Banking Systems Architecture</h1>
+    <div class="post-meta"><span>March 10, 2025</span><span>8 min read</span></div>
+  </div>
+  <div class="post-body">
+    <p>Banking systems are among the most complex software systems in existence. They need to be correct, consistent, auditable, and available — all at the same time.</p>
+    <h2>The Core Ledger</h2>
+    <p>At the heart of any banking system is the ledger — every debit and credit recorded using <code>double-entry bookkeeping</code> in a relational database with strict ACID guarantees.</p>
+    <h2>The API Layer</h2>
+    <p style="margin-bottom:3rem">Above the ledger sits an API layer that handles auth, rate limiting, and routing. This is just a preview — your real content goes here.</p>
+  </div>
+</main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="inner">
+    <span>© 2025 Harish</span>
+    <div style="display:flex;gap:1.5rem">
+      <a href="https://github.com/hari328">GitHub</a>
+      <a href="mailto:harish.hi12321@gmail.com">Email</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.pbtn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  const n = document.getElementById('nav-' + id);
+  if (n) n.classList.add('active');
+  window.scrollTo(0, 0);
+  return false;
+}
+</script>
+</body>
+</html>
