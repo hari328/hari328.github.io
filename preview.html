@@ -259,6 +259,41 @@ main { max-width: 860px; margin: 0 auto; padding: 0 2rem; }
   font-family: monospace; font-size: 0.82rem;
   background: var(--bg2); padding: 2px 6px; border-radius: 3px;
 }
+.post-body pre {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 1rem 1.2rem;
+  overflow-x: auto; margin-bottom: 1.2rem;
+}
+.post-body pre code {
+  background: none; padding: 0;
+  font-size: 0.8rem; line-height: 1.6;
+}
+.post-body h3 {
+  font-family: var(--serif);
+  font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.5rem;
+}
+.post-body ul, .post-body ol {
+  font-size: 0.95rem; line-height: 1.85; color: #333;
+  margin-bottom: 1.2rem; padding-left: 1.5rem;
+}
+.post-body li { margin-bottom: 0.3rem; }
+.post-body hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.series-eyebrow {
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--tech); margin-bottom: 0.8rem;
+}
+.series-group { margin-bottom: 3rem; }
+.series-group-label {
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.8rem;
+  padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.series-group-label span {
+  color: var(--tech); font-weight: 600;
+}
 .back-link {
   display: inline-flex; align-items: center; gap: 0.3rem;
   font-size: 0.82rem; color: var(--muted);
@@ -301,8 +336,9 @@ footer a:hover { color: var(--text); }
   <button class="pbtn active" onclick="show('home',this)">Home</button>
   <button class="pbtn" onclick="show('resume',this)">Resume</button>
   <button class="pbtn" onclick="show('tech',this)">Tech</button>
-  <button class="pbtn" onclick="show('trekking',this)">Trekking</button>
-  <button class="pbtn" onclick="show('post',this)">Blog post</button>
+  <button class="pbtn" onclick="show('trekking',this)" style="display:none">Trekking</button>
+  <button class="pbtn" onclick="show('post-devops-intro',this)">DevOps Intro</button>
+  <button class="pbtn" onclick="show('post-devops-deployment',this)">CI/CD</button>
 </div>
 
 <!-- NAV -->
@@ -313,8 +349,8 @@ footer a:hover { color: var(--text); }
       <li><a href="#" onclick="show('home',null)" class="active" id="nav-home">Home</a></li>
       <li><a href="#" onclick="show('resume',null)" id="nav-resume">Resume</a></li>
       <li><a href="#" onclick="show('tech',null)" id="nav-tech">Tech</a></li>
-      <li><a href="#" onclick="show('trekking',null)" id="nav-trekking">Trekking</a></li>
-      <li><a href="#" onclick="show('health',null)" id="nav-health">Health</a></li>
+      <li style="display:none"><a href="#" onclick="show('trekking',null)" id="nav-trekking">Trekking</a></li>
+      <li style="display:none"><a href="#" onclick="show('health',null)" id="nav-health">Health</a></li>
     </ul>
   </div>
 </nav>
@@ -351,27 +387,19 @@ footer a:hover { color: var(--text); }
       <span class="feed-all tech" onclick="show('tech',null)">All posts →</span>
     </div>
     <ul class="feed-list">
-      <li class="feed-item" onclick="show('post',null)">
-        <span class="feed-item-title">Understanding Banking Systems Architecture</span>
-        <span class="feed-item-date">Mar 2025</span>
+      <li class="feed-item" onclick="show('post-devops-intro',null)">
+        <span class="feed-item-title">Learning DevOps as a Developer</span>
+        <span class="feed-item-date">Mar 2026</span>
       </li>
-      <li class="feed-item">
-        <span class="feed-item-title">Learning DevOps: A Developer's Perspective</span>
-        <span class="feed-item-date">Feb 2025</span>
-      </li>
-      <li class="feed-item">
-        <span class="feed-item-title">Temporal: Durable Execution for the Real World</span>
-        <span class="feed-item-date">Dec 2024</span>
-      </li>
-      <li class="feed-item">
-        <span class="feed-item-title">Running Tansu in Production</span>
-        <span class="feed-item-date">Nov 2024</span>
+      <li class="feed-item" onclick="show('post-devops-deployment',null)">
+        <span class="feed-item-title">Deployment: CI/CD with GitHub Actions</span>
+        <span class="feed-item-date">Mar 2026</span>
       </li>
     </ul>
   </div>
 
   <!-- FEED: Trekking -->
-  <div class="feed-block">
+  <div class="feed-block" style="display:none">
     <div class="feed-head">
       <span class="feed-title">Trekking</span>
       <span class="feed-all trek" onclick="show('trekking',null)">All posts →</span>
@@ -389,7 +417,7 @@ footer a:hover { color: var(--text); }
   </div>
 
   <!-- FEED: Health -->
-  <div class="feed-block" style="margin-bottom:3rem">
+  <div class="feed-block" style="display:none;margin-bottom:3rem">
     <div class="feed-head">
       <span class="feed-title">Running &amp; Health</span>
       <span class="feed-all health" onclick="show('health',null)">All posts →</span>
@@ -493,28 +521,22 @@ footer a:hover { color: var(--text); }
     <h1>Tech</h1>
     <p>Writing about distributed systems, DevOps, banking infrastructure, and developer tools.</p>
   </div>
-  <ul class="post-list">
-    <li class="post-item" onclick="show('post',null)">
-      <div><div class="post-item-title">Understanding Banking Systems Architecture</div><div class="post-item-excerpt">How modern core banking systems are layered, from ledger to API gateway.</div></div>
-      <div class="post-item-date">Mar 2025</div>
-    </li>
-    <li class="post-item">
-      <div><div class="post-item-title">Learning DevOps: A Developer's Perspective</div><div class="post-item-excerpt">Notes from my journey into CI/CD, containers, and infrastructure as code.</div></div>
-      <div class="post-item-date">Feb 2025</div>
-    </li>
-    <li class="post-item">
-      <div><div class="post-item-title">Developer Outlook for 2025</div><div class="post-item-excerpt">What I think matters in software engineering right now.</div></div>
-      <div class="post-item-date">Jan 2025</div>
-    </li>
-    <li class="post-item">
-      <div><div class="post-item-title">Temporal: Durable Execution for the Real World</div><div class="post-item-excerpt">Why Temporal is one of the most underrated tools in backend engineering.</div></div>
-      <div class="post-item-date">Dec 2024</div>
-    </li>
-    <li class="post-item" style="margin-bottom:3rem">
-      <div><div class="post-item-title">Running Tansu in Production</div><div class="post-item-excerpt">Lessons from deploying and operating Tansu at scale.</div></div>
-      <div class="post-item-date">Nov 2024</div>
-    </li>
-  </ul>
+  <div class="series-group">
+    <div class="series-group-label">Series · <span>Learning DevOps as a Developer</span></div>
+    <ul class="post-list">
+      <li class="post-item" onclick="show('post-devops-intro',null)">
+        <div><div class="post-item-title">Learning DevOps as a Developer</div><div class="post-item-excerpt">The roadmap: CI/CD, Terraform, AWS, observability — from a developer's point of view.</div></div>
+        <div class="post-item-date">Mar 2026</div>
+      </li>
+      <li class="post-item" onclick="show('post-devops-deployment',null)">
+        <div>
+          <div class="post-item-title">Part 1 — Deployment: CI/CD with GitHub Actions</div>
+          <div class="post-item-excerpt">How to build CI pipelines with real service containers, build Docker images, and deploy to AWS without long-lived credentials.</div>
+        </div>
+        <div class="post-item-date">Mar 2026</div>
+      </li>
+    </ul>
+  </div>
 </main>
 </div>
 
@@ -538,21 +560,208 @@ footer a:hover { color: var(--text); }
 </main>
 </div>
 
-<!-- ══ POST ══ -->
-<div id="post" class="section">
+<!-- ══ POST: Learning DevOps as a Developer ══ -->
+<div id="post-devops-intro" class="section">
 <main>
   <a href="#" class="back-link" onclick="show('tech',null)">← Tech</a>
   <div class="post-header">
+    <div class="series-eyebrow">Learning DevOps as a Developer · Series Overview</div>
     <span class="tag tag-tech">Tech</span>
-    <h1>Understanding Banking Systems Architecture</h1>
-    <div class="post-meta"><span>March 10, 2025</span><span>8 min read</span></div>
+    <h1>Learning DevOps as a Developer</h1>
+    <div class="post-meta"><span>March 19, 2026</span><span>3 min read</span></div>
   </div>
   <div class="post-body">
-    <p>Banking systems are among the most complex software systems in existence. They need to be correct, consistent, auditable, and available — all at the same time.</p>
-    <h2>The Core Ledger</h2>
-    <p>At the heart of any banking system is the ledger — every debit and credit recorded using <code>double-entry bookkeeping</code> in a relational database with strict ACID guarantees.</p>
-    <h2>The API Layer</h2>
-    <p style="margin-bottom:3rem">Above the ledger sits an API layer that handles auth, rate limiting, and routing. This is just a preview — your real content goes here.</p>
+    <p>If someone asks you to build an app, they're really asking: can you build it, ship it, keep it running, and help it grow? Most developers are comfortable with the first part. The rest is where things get fuzzy.</p>
+    <p>This series is about closing that gap.</p>
+    <h2>The Business Owner's View</h2>
+    <p>When a business owner thinks about their product, they're thinking about:</p>
+    <ol>
+      <li><strong>Deployment</strong> — the product they use</li>
+      <li><strong>Monitoring</strong> — how is my product doing, where can I see when something goes wrong</li>
+      <li><strong>Cost</strong> — how much does running this cost me</li>
+    </ol>
+    <p>Code? They don't care about that. But everything above depends on you knowing how to ship and run it.</p>
+    <h2>The Path</h2>
+    <ol>
+      <li><strong>CI/CD with GitHub Actions</strong> — making sure code is good before it ships, and packaging it for the cloud</li>
+      <li><strong>Terraform + Terragrunt</strong> — defining your infrastructure as code</li>
+      <li><strong>AWS</strong> — VPC, subnets, ECS, ECR, IAM and everything that actually runs your app</li>
+      <li><strong>Terraform + Terragrunt + GitHub Actions</strong> — the full picture: infrastructure meets deployment pipeline</li>
+      <li><strong>Monitoring basics</strong> — USE and RED, the mental models for understanding system health</li>
+      <li><strong>Observability tooling</strong> — traces, logs, metrics, and Alloy</li>
+      <li><strong>Running everything locally</strong> — the full stack on your machine</li>
+    </ol>
+    <h2>The Code</h2>
+    <p>All examples in this series are drawn from two repos:</p>
+    <ul>
+      <li><a href="https://github.com/hari328/backend-patterns-ts" style="color:var(--tech)">backend-patterns-ts</a> — the application: two TypeScript microservices communicating via AWS SQS</li>
+      <li><a href="https://github.com/hari328/infra-backend-patterns-ts" style="color:var(--tech)">infra-backend-patterns-ts</a> — the infrastructure: Terraform/Terragrunt config for everything on AWS</li>
+    </ul>
+    <p style="margin-bottom:3rem">Up next: <a href="#" onclick="show('post-devops-deployment',null)" style="color:var(--tech)">Deployment: CI/CD with GitHub Actions →</a></p>
+  </div>
+</main>
+</div>
+
+<!-- ══ POST: Deployment — CI/CD with GitHub Actions ══ -->
+<div id="post-devops-deployment" class="section">
+<main>
+  <a href="#" class="back-link" onclick="show('tech',null)">← Tech</a>
+  <div class="post-header">
+    <div class="series-eyebrow">Learning DevOps as a Developer · Part 1</div>
+    <span class="tag tag-tech">Tech</span>
+    <h1>Deployment: CI/CD with GitHub Actions</h1>
+    <div class="post-meta"><span>March 19, 2026</span><span>12 min read</span></div>
+  </div>
+  <div class="post-body">
+    <h2>CI vs CD</h2>
+    <p>Deployment is really two things:</p>
+    <p><strong>CI (Continuous Integration)</strong> — making sure that whatever code is being merged into the codebase is good enough. Tests pass, types check out, nothing is broken.</p>
+    <p><strong>CD (Continuous Deployment/Delivery)</strong> — having a clean, repeatable pipeline to ship code to production whenever you're ready. When you deploy depends on the project and company, but having the pipeline ready means you're never scrambling.</p>
+    <p>The easiest way to learn both is GitHub Actions.</p>
+    <hr>
+    <h2>What is GitHub Actions?</h2>
+    <p>Think of GitHub Actions as a pipeline. Some event — a pull request, a push to main, a manual trigger — causes a series of automated steps to run in response. You define what those steps are in a YAML file that lives inside your repo under <code>.github/workflows/</code>.</p>
+    <pre><code>PR opened → CI runs tests → merge → build Docker image → deploy to cloud</code></pre>
+    <p>That's the full loop. Let's walk through each part using a real project: <a href="https://github.com/hari328/backend-patterns-ts" style="color:var(--tech)">backend-patterns-ts</a>, a TypeScript monorepo with two microservices communicating via AWS SQS.</p>
+    <hr>
+    <h2>Anatomy of a Workflow</h2>
+    <p>Every GitHub Actions workflow has the same building blocks.</p>
+    <h3>1. Trigger</h3>
+    <p>The <code>on</code> key defines what kicks off the workflow.</p>
+    <pre><code>on:
+  pull_request:
+    branches: [main]</code></pre>
+    <p>This runs whenever a PR targets main. You can trigger on push, on a schedule, or manually.</p>
+    <h3>2. Jobs and Runners</h3>
+    <p>A workflow is made up of jobs. By default, jobs run in parallel. Each job runs on a <strong>runner</strong> — a VM that GitHub spins up for you.</p>
+    <pre><code>jobs:
+  lint:
+    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest</code></pre>
+    <p>Both jobs start at the same time. If you want one to wait for another, you use <code>needs</code>.</p>
+    <h3>3. Steps</h3>
+    <p>Each job has steps that run sequentially, top to bottom. A step either runs a shell command or calls an <strong>action</strong>.</p>
+    <h3>4. Actions</h3>
+    <p>Actions are reusable steps that the community (or GitHub itself) has published. Instead of writing 20 lines to checkout code or configure AWS credentials, you call a single action.</p>
+    <pre><code>- uses: actions/checkout@v4
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22</code></pre>
+    <h3>5. Services</h3>
+    <p>Services are containers that run alongside your job — things like a database, cache, or cloud emulator that your tests depend on. Instead of mocking these dependencies, you run the real thing.</p>
+    <pre><code>services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - 4566:4566
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379</code></pre>
+    <p>The real power here is LocalStack — it emulates AWS services like SQS locally inside the runner. Your integration tests send messages to a fake SQS queue on <code>localhost:4566</code> without ever touching real AWS. No costs, no credentials, no flaky network calls.</p>
+    <h3>6. Environments and Secrets</h3>
+    <p>Environments let you add protection rules and approvals to sensitive workflows. Secrets store sensitive values like API keys or connection strings, injected at runtime as <code>${{ secrets.DATABASE_URL }}</code>.</p>
+    <h3>7. OIDC</h3>
+    <p>OIDC (OpenID Connect) lets your workflow get temporary, short-lived credentials from cloud providers like AWS — without storing long-lived keys as secrets. GitHub and AWS establish trust via a token that expires when the job finishes. This is the right way to authenticate to the cloud from GitHub Actions.</p>
+    <hr>
+    <h2>Act 1 — CI: Does My Code Work?</h2>
+    <p>The first pipeline you should build is CI. Run it on every pull request so you catch problems before they land on main.</p>
+    <pre><code>on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]</code></pre>
+    <h3>Parallel jobs for fast feedback</h3>
+    <pre><code>jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run type-check</code></pre>
+    <p>Lint and type-check run at the same time. No waiting. If either fails, the PR is blocked.</p>
+    <h3>Services: real dependencies for integration tests</h3>
+    <p>Integration tests need real infrastructure, not mocks. GitHub Actions lets you run Postgres, Redis, and LocalStack as sidecar containers right inside the runner. This repo uses AWS SQS to pass messages between microservices. In tests, LocalStack intercepts those SQS calls so you're testing the real message flow without hitting real AWS.</p>
+    <h3>Controlling job order with <code>needs</code></h3>
+    <pre><code>  unit-tests:
+    needs: [lint, type-check]
+
+  integration-tests:
+    needs: [lint, type-check]</code></pre>
+    <p>The <code>needs</code> key creates a dependency. Unit tests and integration tests only start after lint and type-check both pass. No point running tests if the code doesn't even compile.</p>
+    <hr>
+    <h2>Act 2 — Build: Package It for the Cloud</h2>
+    <p>Once code lands on main, the next step is packaging it as a Docker image and pushing it to a registry.</p>
+    <pre><code>on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'</code></pre>
+    <p>This only triggers when app code changes — not when docs or config files are updated.</p>
+    <h3>Tagging images with the git SHA</h3>
+    <p>Every image needs a unique tag. Using the git commit SHA means you can always trace a running container back to the exact code it was built from:</p>
+    <pre><code>- name: Set image tag
+  id: meta
+  run: |
+    SHORT_SHA=$(git rev-parse --short HEAD)
+    echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"</code></pre>
+    <h3>OIDC: no long-lived AWS keys</h3>
+    <p>Most tutorials tell you to create an IAM user, generate an access key, and paste it into secrets. Don't do this. Keys get leaked. Keys need rotating. Keys are a liability.</p>
+    <p>Use OIDC instead. GitHub gets a temporary token from AWS that expires when the job finishes:</p>
+    <pre><code>permissions:
+  id-token: write
+  contents: read
+
+- name: Configure AWS Credentials via OIDC
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+    aws-region: us-east-1</code></pre>
+    <p>The only secret you need is <code>AWS_ROLE_ARN</code> — just an ARN string, not a credential. AWS verifies the token, grants temporary access to the role, and the job proceeds.</p>
+    <h3>Building and pushing to ECR</h3>
+    <pre><code>- name: Login to Amazon ECR
+  id: ecr-login
+  uses: aws-actions/amazon-ecr-login@v2
+
+- name: Build & push posts-service
+  run: |
+    IMAGE="${{ steps.ecr-login.outputs.registry }}/${PROJECT}-posts-service"
+    docker build -f apps/posts-service/Dockerfile \
+      -t "${IMAGE}:${IMAGE_TAG}" \
+      -t "${IMAGE}:latest" .
+    docker push "${IMAGE}:${IMAGE_TAG}"
+    docker push "${IMAGE}:latest"</code></pre>
+    <p>Two tags per image: the specific SHA (immutable, used for deploys) and <code>latest</code> (for convenience).</p>
+    <hr>
+    <h2>The Full Picture</h2>
+    <pre><code>PR opened
+  └── ci.yml → lint, type-check, unit tests, integration tests
+               (with real Postgres, SQS via LocalStack, Redis)
+
+Merged to main
+  └── build-push.yml → build Docker images
+                     → tag with git SHA
+                     → push to ECR (via OIDC, no long-lived keys)</code></pre>
+    <p>Two workflows. Two concerns. Each small enough to understand on its own.</p>
+    <p>At this point you have images built and sitting in ECR. The next question is: where do they actually run? That requires understanding AWS — ECS, networking, IAM roles. That's covered in the next article.</p>
+    <p style="margin-bottom:3rem"><em>All workflows referenced are in <a href="https://github.com/hari328/backend-patterns-ts/tree/main/.github/workflows" style="color:var(--tech)">backend-patterns-ts</a>.</em></p>
   </div>
 </main>
 </div>
