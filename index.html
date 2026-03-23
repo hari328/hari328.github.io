@@ -27,6 +27,53 @@
   --health-bg:   #fbeee8;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:     #141210;
+    --bg2:    #1e1b17;
+    --text:   #e8e0d5;
+    --muted:  #8a8078;
+    --border: #2e2a25;
+
+    --tech:        #7b9ef0;
+    --tech-bg:     #1a2035;
+    --trek:        #5cad7c;
+    --trek-bg:     #112a1c;
+    --health:      #d4836a;
+    --health-bg:   #2a1510;
+  }
+}
+
+[data-theme="dark"] {
+  --bg:     #141210;
+  --bg2:    #1e1b17;
+  --text:   #e8e0d5;
+  --muted:  #8a8078;
+  --border: #2e2a25;
+
+  --tech:        #7b9ef0;
+  --tech-bg:     #1a2035;
+  --trek:        #5cad7c;
+  --trek-bg:     #112a1c;
+  --health:      #d4836a;
+  --health-bg:   #2a1510;
+}
+
+[data-theme="light"] {
+  --bg:     #fdf6ec;
+  --bg2:    #f5ead8;
+  --text:   #1a1a1a;
+  --muted:  #6b6b6b;
+  --border: #e5e2dd;
+
+  --tech:        #2c4a9e;
+  --tech-bg:     #eef1fb;
+  --trek:        #1e6641;
+  --trek-bg:     #e8f5ee;
+  --health:      #8c3a1a;
+  --health-bg:   #fbeee8;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -314,6 +361,16 @@ footer span { font-size: 0.78rem; color: var(--muted); }
 footer a { font-size: 0.78rem; color: var(--muted); transition: color 0.15s; }
 footer a:hover { color: var(--text); }
 
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  background: none; border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+  width: 32px; height: 32px; border-radius: 6px;
+  font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.theme-toggle:hover { border-color: var(--text); color: var(--text); }
+
 /* ── PREVIEW BAR ── */
 .preview-bar {
   background: #1a1a1a; font-size: 0.72rem; font-family: var(--sans);
@@ -339,6 +396,7 @@ footer a:hover { color: var(--text); }
   <button class="pbtn" onclick="show('trekking',this)" style="display:none">Trekking</button>
   <button class="pbtn" onclick="show('post-devops-intro',this)">DevOps Intro</button>
   <button class="pbtn" onclick="show('post-devops-deployment',this)">CI/CD</button>
+  <button class="pbtn" onclick="show('post-devops-terraform',this)">Terraform</button>
 </div>
 
 <!-- NAV -->
@@ -352,6 +410,7 @@ footer a:hover { color: var(--text); }
       <li style="display:none"><a href="#" onclick="show('trekking',null)" id="nav-trekking">Trekking</a></li>
       <li style="display:none"><a href="#" onclick="show('health',null)" id="nav-health">Health</a></li>
     </ul>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode">☀️</button>
   </div>
 </nav>
 
@@ -391,8 +450,12 @@ footer a:hover { color: var(--text); }
         <span class="feed-item-title">Learning DevOps as a Developer</span>
         <span class="feed-item-date">Mar 2026</span>
       </li>
+      <li class="feed-item" onclick="show('post-devops-terraform',null)">
+        <span class="feed-item-title">Part 2 — Terraform + Terragrunt</span>
+        <span class="feed-item-date">Mar 2026</span>
+      </li>
       <li class="feed-item" onclick="show('post-devops-deployment',null)">
-        <span class="feed-item-title">Deployment: CI/CD with GitHub Actions</span>
+        <span class="feed-item-title">Part 1 — Deployment: CI/CD with GitHub Actions</span>
         <span class="feed-item-date">Mar 2026</span>
       </li>
     </ul>
@@ -532,6 +595,13 @@ footer a:hover { color: var(--text); }
         <div>
           <div class="post-item-title">Part 1 — Deployment: CI/CD with GitHub Actions</div>
           <div class="post-item-excerpt">How to build CI pipelines with real service containers, build Docker images, and deploy to AWS without long-lived credentials.</div>
+        </div>
+        <div class="post-item-date">Mar 2026</div>
+      </li>
+      <li class="post-item" onclick="show('post-devops-terraform',null)" style="margin-bottom:3rem">
+        <div>
+          <div class="post-item-title">Part 2 — Terraform + Terragrunt</div>
+          <div class="post-item-excerpt">What IaC is, why vanilla Terraform falls short, and how Terragrunt solves state management, DRY config, and environment isolation.</div>
         </div>
         <div class="post-item-date">Mar 2026</div>
       </li>
@@ -760,8 +830,147 @@ Merged to main
                      → tag with git SHA
                      → push to ECR (via OIDC, no long-lived keys)</code></pre>
     <p>Two workflows. Two concerns. Each small enough to understand on its own.</p>
-    <p>At this point you have images built and sitting in ECR. The next question is: where do they actually run? That requires understanding AWS — ECS, networking, IAM roles. That's covered in the next article.</p>
-    <p style="margin-bottom:3rem"><em>All workflows referenced are in <a href="https://github.com/hari328/backend-patterns-ts/tree/main/.github/workflows" style="color:var(--tech)">backend-patterns-ts</a>.</em></p>
+    <p>At this point you have images built and sitting in ECR. The next question is: where do they actually run? That requires understanding AWS — ECS, networking, IAM roles. But before that, we need the infrastructure itself defined as code.</p>
+    <p><em>All workflows referenced are in <a href="https://github.com/hari328/backend-patterns-ts/tree/main/.github/workflows" style="color:var(--tech)">backend-patterns-ts</a>.</em></p>
+    <p style="margin-bottom:3rem">Up next: <a href="#" onclick="show('post-devops-terraform',null)" style="color:var(--tech)">Terraform + Terragrunt →</a></p>
+  </div>
+</main>
+</div>
+
+<!-- ══ POST: Terraform + Terragrunt ══ -->
+<div id="post-devops-terraform" class="section">
+<main>
+  <a href="#" class="back-link" onclick="show('tech',null)">← Tech</a>
+  <div class="post-header">
+    <div class="series-eyebrow">Learning DevOps as a Developer · Part 2</div>
+    <span class="tag tag-tech">Tech</span>
+    <h1>Terraform + Terragrunt</h1>
+    <div class="post-meta"><span>March 23, 2026</span><span>8 min read</span></div>
+  </div>
+  <div class="post-body">
+    <h2>What is IaC?</h2>
+    <p>Infrastructure as Code (IaC) is a way to provision and manage infrastructure using code instead of manual processes. It lets you define your infrastructure in a declarative way, making it easier to version, test, and deploy changes.</p>
+    <p>IaC is one of the leading ways to deploy infrastructure for any SaaS product. There are other tools for it, but Terraform is the most popular — it supports multiple cloud providers, is open source, has a large community, and is simple to learn.</p>
+    <p>Terraform's core idea is <strong>declarative code</strong>: you define what you want, and Terraform figures out how to get there. It uses a domain-specific language called HCL (HashiCorp Configuration Language).</p>
+    <hr>
+    <h2>The Problem with Vanilla Terraform</h2>
+    <p>Terraform stores the state of your infrastructure in a state file. By default, that file lives locally — which breaks down immediately when multiple developers are working on the same infrastructure.</p>
+    <p>You can move to remote state (S3 + DynamoDB for AWS), but now you've added setup overhead, and you still haven't solved the bigger problem: how do you manage multiple environments (dev, stage, prod) without repeating yourself?</p>
+    <p>That's where Terragrunt comes in.</p>
+    <hr>
+    <h2>Terragrunt</h2>
+    <p>Terragrunt is a thin wrapper around Terraform. It solves three things that vanilla Terraform handles poorly:</p>
+    <ol>
+      <li><strong>Remote state management</strong> — automatically creates and configures S3 + DynamoDB state backends per module, per environment</li>
+      <li><strong>DRY configuration</strong> — a root config file is inherited by all child modules; no repeated provider or backend boilerplate</li>
+      <li><strong>Environment isolation</strong> — stage and prod are separate folder trees sharing the same module code</li>
+    </ol>
+    <p>I learned Terraform and Terragrunt hands-on from <a href="https://www.oreilly.com/library/view/terraform-up-and/9781098116736/" style="color:var(--tech)">Terraform: Up and Running</a>. I'd recommend coding along with the book — having hands-on confidence with Terraform is non-negotiable for any developer working in the cloud today.</p>
+    <hr>
+    <h2>Repo Structure</h2>
+    <p>The <a href="https://github.com/hari328/infra-backend-patterns-ts" style="color:var(--tech)">infra-backend-patterns-ts</a> repo shows how this works in practice:</p>
+    <pre><code>terraform/
+├── terragrunt.hcl          ← root config, inherited by all modules
+├── modules/                ← reusable terraform modules
+├── stage/
+│   ├── env.yaml            ← environment: stage, region: us-east-1
+│   └── us-east-1/
+│       └── base-infra/
+│           ├── networking/terragrunt.hcl
+│           ├── dns-ssl/terragrunt.hcl
+│           ├── alb/terragrunt.hcl
+│           ├── ecs-cluster/terragrunt.hcl
+│           └── github-actions-app-deploy-role/terragrunt.hcl
+└── prod/
+    ├── env.yaml            ← environment: prod, region: us-east-1
+    └── us-east-1/
+        └── base-infra/
+            ├── networking/terragrunt.hcl
+            ├── dns-ssl/terragrunt.hcl
+            ├── alb/terragrunt.hcl
+            ├── ecs-cluster/terragrunt.hcl
+            └── github-actions-app-deploy-role/terragrunt.hcl</code></pre>
+    <p>Same modules, different <code>env.yaml</code> — prod gets its own state bucket and lock table automatically via the root config.</p>
+    <hr>
+    <h2>4 Key Patterns</h2>
+    <h3>1. DRY via root inheritance</h3>
+    <p>The root <code>terragrunt.hcl</code> defines the provider and S3 backend once. Every child config inherits it with a single line:</p>
+    <pre><code>include "root" {
+  path = find_in_parent_folders()
+}</code></pre>
+    <p>No repeated boilerplate across 10 modules across 2 environments.</p>
+    <h3>2. Environment isolation</h3>
+    <p>Each environment (<code>stage</code>, <code>prod</code>) is its own folder tree with its own <code>env.yaml</code>. Switching environments means switching folders — the module code is identical.</p>
+    <h3>3. Explicit dependency wiring</h3>
+    <p>Modules declare dependencies using <code>dependency</code> blocks, which enforce apply order and pass outputs directly as inputs — no manual copy-pasting of resource IDs between modules.</p>
+    <pre><code>dependency "networking" {
+  config_path = "../networking"
+}
+
+inputs = {
+  vpc_id     = dependency.networking.outputs.vpc_id
+  subnet_ids = dependency.networking.outputs.private_subnet_ids
+}</code></pre>
+    <h3>4. Isolated state per module — how Terragrunt stores state in S3</h3>
+    <p>Each module gets its own <code>.tfstate</code> file in S3. A change to <code>alb</code> doesn't touch <code>networking</code> state — safe, granular applies with no blast radius.</p>
+    <p>Each environment folder has an <code>env.yaml</code> that declares which environment and region it belongs to:</p>
+    <pre><code># terraform/stage/env.yaml
+aws_region:  us-east-1
+environment: stage
+project:     hari328</code></pre>
+    <p>The root <code>terragrunt.hcl</code> reads that file and wires up the S3 backend for every module automatically:</p>
+    <pre><code>locals {
+  env_vars    = yamldecode(file("${find_in_parent_folders("env.yaml")}"))
+  aws_region  = local.env_vars["aws_region"]
+  environment = local.env_vars["environment"]
+  project     = local.env_vars["project"]
+}
+
+remote_state {
+  backend = "s3"
+  generate = {
+    path      = "backend.tf"
+    if_exists = "overwrite_terragrunt"
+  }
+  config = {
+    bucket         = "hari328-infra-${local.environment}-tfstate"
+    key            = "${path_relative_to_include()}/terraform.tfstate"
+    region         = local.aws_region
+    encrypt        = true
+    dynamodb_table = "hari328-infra-${local.environment}-tflock"
+  }
+}</code></pre>
+    <p>The critical piece is <code>path_relative_to_include()</code>. Terragrunt replaces that with the module's folder path relative to the root config — so the S3 key is derived automatically from where the module lives in the repo. This is what the actual S3 buckets look like:</p>
+    <pre><code>hari328-infra-stage-tfstate/          ← one bucket per environment
+└── stage/
+    └── us-east-1/
+        └── base-infra/
+            ├── networking/
+            │   └── terraform.tfstate
+            ├── dns-ssl/
+            │   └── terraform.tfstate
+            ├── alb/
+            │   └── terraform.tfstate
+            ├── ecs-cluster/
+            │   └── terraform.tfstate
+            └── github-actions-app-deploy-role/
+                └── terraform.tfstate
+
+hari328-infra-prod-tfstate/           ← completely separate bucket
+└── prod/
+    └── us-east-1/
+        └── base-infra/
+            ├── networking/
+            │   └── terraform.tfstate
+            ├── ...
+            └── ecs-cluster/
+                └── terraform.tfstate</code></pre>
+    <p>You never write any of this manually. The folder structure in the repo <em>is</em> the S3 key path — Terragrunt derives it automatically via <code>path_relative_to_include()</code>. Add a new module folder, and its state file appears in the right place on the first <code>apply</code>.</p>
+    <p>The DynamoDB table (<code>hari328-infra-stage-tflock</code>) provides state locking — if one engineer is running <code>apply</code> on <code>networking</code>, a second engineer's apply on the same module is blocked until the first one finishes. Each module has its own lock entry, so an apply on <code>alb</code> never blocks an apply on <code>ecs-cluster</code>.</p>
+    <hr>
+    <h2>Takeaway</h2>
+    <p>Terragrunt is what makes Terraform production-ready. It solves the three real-world problems vanilla Terraform doesn't handle well: shared remote state, DRY config across environments, and dependency ordering between modules. If you're deploying anything beyond a single environment, reach for Terragrunt.</p>
+    <p style="margin-bottom:3rem">← <a href="#" onclick="show('post-devops-deployment',null)" style="color:var(--tech)">Part 1: Deployment: CI/CD with GitHub Actions</a></p>
   </div>
 </main>
 </div>
@@ -789,6 +998,27 @@ function show(id, btn) {
   window.scrollTo(0, 0);
   return false;
 }
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = current === 'dark' || (!current && sysDark);
+  const next = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', next);
+}
+
+(function() {
+  const saved = localStorage.getItem('theme');
+  const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (sysDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  window.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
+  });
+})();
 </script>
 </body>
 </html>
