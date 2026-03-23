@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Writing — Harish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/main.js"></script>
+</head>
+<body>
+<nav>
+  <div class="inner">
+    <a href="/" class="logo">Harish</a>
+    <ul>
+      <li><a href="/" id="nav-home">Home</a></li>
+      <li><a href="/resume/" id="nav-resume">Resume</a></li>
+      <li><a href="/writing/" id="nav-writing">Writing</a></li>
+    </ul>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode">☀️</button>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1>Writing</h1>
+    <p>Writing about distributed systems, DevOps, banking infrastructure, and developer tools.</p>
+  </div>
+  <div class="series-group">
+    <div class="series-group-label">Series · <span>Learning DevOps as a Developer</span></div>
+    <ul class="post-list">
+      <li class="post-item">
+        <a href="/writing/devops/" style="display:contents">
+          <div><div class="post-item-title">Learning DevOps as a Developer</div><div class="post-item-excerpt">The roadmap: CI/CD, Terraform, AWS, observability — from a developer's point of view.</div></div>
+          <div class="post-item-date">Mar 2026</div>
+        </a>
+      </li>
+      <li class="post-item">
+        <a href="/writing/devops/1-cicd-github-actions.html" style="display:contents">
+          <div>
+            <div class="post-item-title">Part 1 — Deployment: CI/CD with GitHub Actions</div>
+            <div class="post-item-excerpt">How to build CI pipelines with real service containers, build Docker images, and deploy to AWS without long-lived credentials.</div>
+          </div>
+          <div class="post-item-date">Mar 2026</div>
+        </a>
+      </li>
+      <li class="post-item" style="margin-bottom:3rem">
+        <a href="/writing/devops/2-terraform-terragrunt.html" style="display:contents">
+          <div>
+            <div class="post-item-title">Part 2 — Terraform + Terragrunt</div>
+            <div class="post-item-excerpt">What IaC is, why vanilla Terraform falls short, and how Terragrunt solves state management, DRY config, and environment isolation.</div>
+          </div>
+          <div class="post-item-date">Mar 2026</div>
+        </a>
+      </li>
+    </ul>
+  </div>
+</main>
+
+<footer>
+  <div class="inner">
+    <span>© 2026 Harish</span>
+    <div style="display:flex;gap:1.5rem">
+      <a href="https://github.com/hari328">GitHub</a>
+      <a href="mailto:harish.hi12321@gmail.com">Email</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

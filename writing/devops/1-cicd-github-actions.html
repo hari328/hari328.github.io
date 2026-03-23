@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CI/CD with GitHub Actions — Harish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/main.js"></script>
+</head>
+<body>
+<nav>
+  <div class="inner">
+    <a href="/" class="logo">Harish</a>
+    <ul>
+      <li><a href="/" id="nav-home">Home</a></li>
+      <li><a href="/resume/" id="nav-resume">Resume</a></li>
+      <li><a href="/writing/" id="nav-writing">Writing</a></li>
+    </ul>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode">☀️</button>
+  </div>
+</nav>
+
+<main>
+  <a href="/writing/" class="back-link">← Writing</a>
+  <div class="post-header">
+    <div class="series-eyebrow">Learning DevOps as a Developer · Part 1</div>
+    <span class="tag tag-tech">Tech</span>
+    <h1>Deployment: CI/CD with GitHub Actions</h1>
+    <div class="post-meta"><span>March 19, 2026</span><span>12 min read</span></div>
+  </div>
+  <div class="post-body">
+    <h2>CI vs CD</h2>
+    <p>Deployment is really two things:</p>
+    <p><strong>CI (Continuous Integration)</strong> — making sure that whatever code is being merged into the codebase is good enough. Tests pass, types check out, nothing is broken.</p>
+    <p><strong>CD (Continuous Deployment/Delivery)</strong> — having a clean, repeatable pipeline to ship code to production whenever you're ready. When you deploy depends on the project and company, but having the pipeline ready means you're never scrambling.</p>
+    <p>The easiest way to learn both is GitHub Actions.</p>
+    <hr>
+    <h2>What is GitHub Actions?</h2>
+    <p>Think of GitHub Actions as a pipeline. Some event — a pull request, a push to main, a manual trigger — causes a series of automated steps to run in response. You define what those steps are in a YAML file that lives inside your repo under <code>.github/workflows/</code>.</p>
+    <pre><code>PR opened → CI runs tests → merge → build Docker image → deploy to cloud</code></pre>
+    <p>That's the full loop. Let's walk through each part using a real project: <a href="https://github.com/hari328/backend-patterns-ts" style="color:var(--tech)">backend-patterns-ts</a>, a TypeScript monorepo with two microservices communicating via AWS SQS.</p>
+    <hr>
+    <h2>Anatomy of a Workflow</h2>
+    <p>Every GitHub Actions workflow has the same building blocks.</p>
+    <h3>1. Trigger</h3>
+    <p>The <code>on</code> key defines what kicks off the workflow.</p>
+    <pre><code>on:
+  pull_request:
+    branches: [main]</code></pre>
+    <p>This runs whenever a PR targets main. You can trigger on push, on a schedule, or manually.</p>
+    <h3>2. Jobs and Runners</h3>
+    <p>A workflow is made up of jobs. By default, jobs run in parallel. Each job runs on a <strong>runner</strong> — a VM that GitHub spins up for you.</p>
+    <pre><code>jobs:
+  lint:
+    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-latest</code></pre>
+    <p>Both jobs start at the same time. If you want one to wait for another, you use <code>needs</code>.</p>
+    <h3>3. Steps</h3>
+    <p>Each job has steps that run sequentially, top to bottom. A step either runs a shell command or calls an <strong>action</strong>.</p>
+    <h3>4. Actions</h3>
+    <p>Actions are reusable steps that the community (or GitHub itself) has published. Instead of writing 20 lines to checkout code or configure AWS credentials, you call a single action.</p>
+    <pre><code>- uses: actions/checkout@v4
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22</code></pre>
+    <h3>5. Services</h3>
+    <p>Services are containers that run alongside your job — things like a database, cache, or cloud emulator that your tests depend on. Instead of mocking these dependencies, you run the real thing.</p>
+    <pre><code>services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - 4566:4566
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379</code></pre>
+    <p>The real power here is LocalStack — it emulates AWS services like SQS locally inside the runner. Your integration tests send messages to a fake SQS queue on <code>localhost:4566</code> without ever touching real AWS. No costs, no credentials, no flaky network calls.</p>
+    <h3>6. Environments and Secrets</h3>
+    <p>Environments let you add protection rules and approvals to sensitive workflows. Secrets store sensitive values like API keys or connection strings, injected at runtime as <code>${{ secrets.DATABASE_URL }}</code>.</p>
+    <h3>7. OIDC</h3>
+    <p>OIDC (OpenID Connect) lets your workflow get temporary, short-lived credentials from cloud providers like AWS — without storing long-lived keys as secrets. GitHub and AWS establish trust via a token that expires when the job finishes. This is the right way to authenticate to the cloud from GitHub Actions.</p>
+    <hr>
+    <h2>Act 1 — CI: Does My Code Work?</h2>
+    <p>The first pipeline you should build is CI. Run it on every pull request so you catch problems before they land on main.</p>
+    <pre><code>on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]</code></pre>
+    <h3>Parallel jobs for fast feedback</h3>
+    <pre><code>jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run type-check</code></pre>
+    <p>Lint and type-check run at the same time. No waiting. If either fails, the PR is blocked.</p>
+    <h3>Services: real dependencies for integration tests</h3>
+    <p>Integration tests need real infrastructure, not mocks. GitHub Actions lets you run Postgres, Redis, and LocalStack as sidecar containers right inside the runner. This repo uses AWS SQS to pass messages between microservices. In tests, LocalStack intercepts those SQS calls so you're testing the real message flow without hitting real AWS.</p>
+    <h3>Controlling job order with <code>needs</code></h3>
+    <pre><code>  unit-tests:
+    needs: [lint, type-check]
+
+  integration-tests:
+    needs: [lint, type-check]</code></pre>
+    <p>The <code>needs</code> key creates a dependency. Unit tests and integration tests only start after lint and type-check both pass. No point running tests if the code doesn't even compile.</p>
+    <hr>
+    <h2>Act 2 — Build: Package It for the Cloud</h2>
+    <p>Once code lands on main, the next step is packaging it as a Docker image and pushing it to a registry.</p>
+    <pre><code>on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/**'
+      - 'packages/**'</code></pre>
+    <p>This only triggers when app code changes — not when docs or config files are updated.</p>
+    <h3>Tagging images with the git SHA</h3>
+    <p>Every image needs a unique tag. Using the git commit SHA means you can always trace a running container back to the exact code it was built from:</p>
+    <pre><code>- name: Set image tag
+  id: meta
+  run: |
+    SHORT_SHA=$(git rev-parse --short HEAD)
+    echo "image_tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"</code></pre>
+    <h3>OIDC: no long-lived AWS keys</h3>
+    <p>Most tutorials tell you to create an IAM user, generate an access key, and paste it into secrets. Don't do this. Keys get leaked. Keys need rotating. Keys are a liability.</p>
+    <p>Use OIDC instead. GitHub gets a temporary token from AWS that expires when the job finishes:</p>
+    <pre><code>permissions:
+  id-token: write
+  contents: read
+
+- name: Configure AWS Credentials via OIDC
+  uses: aws-actions/configure-aws-credentials@v4
+  with:
+    role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+    aws-region: us-east-1</code></pre>
+    <p>The only secret you need is <code>AWS_ROLE_ARN</code> — just an ARN string, not a credential. AWS verifies the token, grants temporary access to the role, and the job proceeds.</p>
+    <h3>Building and pushing to ECR</h3>
+    <pre><code>- name: Login to Amazon ECR
+  id: ecr-login
+  uses: aws-actions/amazon-ecr-login@v2
+
+- name: Build &amp; push posts-service
+  run: |
+    IMAGE="${{ steps.ecr-login.outputs.registry }}/${PROJECT}-posts-service"
+    docker build -f apps/posts-service/Dockerfile \
+      -t "${IMAGE}:${IMAGE_TAG}" \
+      -t "${IMAGE}:latest" .
+    docker push "${IMAGE}:${IMAGE_TAG}"
+    docker push "${IMAGE}:latest"</code></pre>
+    <p>Two tags per image: the specific SHA (immutable, used for deploys) and <code>latest</code> (for convenience).</p>
+    <hr>
+    <h2>The Full Picture</h2>
+    <pre><code>PR opened
+  └── ci.yml → lint, type-check, unit tests, integration tests
+               (with real Postgres, SQS via LocalStack, Redis)
+
+Merged to main
+  └── build-push.yml → build Docker images
+                     → tag with git SHA
+                     → push to ECR (via OIDC, no long-lived keys)</code></pre>
+    <p>Two workflows. Two concerns. Each small enough to understand on its own.</p>
+    <p>At this point you have images built and sitting in ECR. The next question is: where do they actually run? That requires understanding AWS — ECS, networking, IAM roles. But before that, we need the infrastructure itself defined as code.</p>
+    <p><em>All workflows referenced are in <a href="https://github.com/hari328/backend-patterns-ts/tree/main/.github/workflows" style="color:var(--tech)">backend-patterns-ts</a>.</em></p>
+    <p style="margin-bottom:3rem">Up next: <a href="./2-terraform-terragrunt.html" style="color:var(--tech)">Terraform + Terragrunt →</a></p>
+  </div>
+</main>
+
+<footer>
+  <div class="inner">
+    <span>© 2026 Harish</span>
+    <div style="display:flex;gap:1.5rem">
+      <a href="https://github.com/hari328">GitHub</a>
+      <a href="mailto:harish.hi12321@gmail.com">Email</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

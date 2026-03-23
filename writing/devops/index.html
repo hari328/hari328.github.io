@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning DevOps as a Developer — Harish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/main.js"></script>
+</head>
+<body>
+<nav>
+  <div class="inner">
+    <a href="/" class="logo">Harish</a>
+    <ul>
+      <li><a href="/" id="nav-home">Home</a></li>
+      <li><a href="/resume/" id="nav-resume">Resume</a></li>
+      <li><a href="/writing/" id="nav-writing">Writing</a></li>
+    </ul>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode">☀️</button>
+  </div>
+</nav>
+
+<main>
+  <a href="/writing/" class="back-link">← Writing</a>
+  <div class="post-header">
+    <div class="series-eyebrow">Learning DevOps as a Developer · Series Overview</div>
+    <span class="tag tag-tech">Tech</span>
+    <h1>Learning DevOps as a Developer</h1>
+    <div class="post-meta"><span>March 19, 2026</span><span>3 min read</span></div>
+  </div>
+  <div class="post-body">
+    <p>If someone asks you to build an app, they're really asking: can you build it, ship it, keep it running, and help it grow? Most developers are comfortable with the first part. The rest is where things get fuzzy.</p>
+    <p>This series is about closing that gap.</p>
+    <h2>The Business Owner's View</h2>
+    <p>When a business owner thinks about their product, they're thinking about:</p>
+    <ol>
+      <li><strong>Deployment</strong> — the product they use</li>
+      <li><strong>Monitoring</strong> — how is my product doing, where can I see when something goes wrong</li>
+      <li><strong>Cost</strong> — how much does running this cost me</li>
+    </ol>
+    <p>Code? They don't care about that. But everything above depends on you knowing how to ship and run it.</p>
+    <h2>The Path</h2>
+    <ol>
+      <li><strong>CI/CD with GitHub Actions</strong> — making sure code is good before it ships, and packaging it for the cloud</li>
+      <li><strong>Terraform + Terragrunt</strong> — defining your infrastructure as code</li>
+      <li><strong>AWS</strong> — VPC, subnets, ECS, ECR, IAM and everything that actually runs your app</li>
+      <li><strong>Terraform + Terragrunt + GitHub Actions</strong> — the full picture: infrastructure meets deployment pipeline</li>
+      <li><strong>Monitoring basics</strong> — USE and RED, the mental models for understanding system health</li>
+      <li><strong>Observability tooling</strong> — traces, logs, metrics, and Alloy</li>
+      <li><strong>Running everything locally</strong> — the full stack on your machine</li>
+    </ol>
+    <h2>The Code</h2>
+    <p>All examples in this series are drawn from two repos:</p>
+    <ul>
+      <li><a href="https://github.com/hari328/backend-patterns-ts" style="color:var(--tech)">backend-patterns-ts</a> — the application: two TypeScript microservices communicating via AWS SQS</li>
+      <li><a href="https://github.com/hari328/infra-backend-patterns-ts" style="color:var(--tech)">infra-backend-patterns-ts</a> — the infrastructure: Terraform/Terragrunt config for everything on AWS</li>
+    </ul>
+    <p style="margin-bottom:3rem">Up next: <a href="./1-cicd-github-actions.html" style="color:var(--tech)">Deployment: CI/CD with GitHub Actions →</a></p>
+  </div>
+</main>
+
+<footer>
+  <div class="inner">
+    <span>© 2026 Harish</span>
+    <div style="display:flex;gap:1.5rem">
+      <a href="https://github.com/hari328">GitHub</a>
+      <a href="mailto:harish.hi12321@gmail.com">Email</a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
