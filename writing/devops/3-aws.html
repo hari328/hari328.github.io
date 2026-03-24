@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AWS — The Infrastructure That Actually Runs Your App — Harish</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/main.css">
+<script src="/assets/js/main.js"></script>
+</head>
+<body>
+<nav>
+  <div class="inner">
+    <a href="/" class="logo">Harish</a>
+    <ul>
+      <li><a href="/" id="nav-home">Home</a></li>
+      <li><a href="/resume/" id="nav-resume">Resume</a></li>
+      <li><a href="/writing/" id="nav-writing">Writing</a></li>
+    </ul>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark mode">☀️</button>
+  </div>
+</nav>
+
+<main>
+  <a href="/writing/" class="back-link">← Writing</a>
+  <div class="post-header">
+    <div class="series-eyebrow">Learning DevOps as a Developer · Part 3</div>
+    <span class="tag tag-tech">Tech</span>
+    <h1>AWS — The Infrastructure That Actually Runs Your App</h1>
+    <div class="post-meta"><span>March 24, 2026</span><span>14 min read</span></div>
+  </div>
+  <div class="post-body">
+
+    <p>You've written the Terraform. You've set up GitHub Actions. Now let's talk about what you're actually building in AWS — and more importantly, <em>why</em> each piece exists.</p>
+    <p>This isn't a "what is AWS" article. You already know AWS. This is about understanding the <em>architecture decisions</em> behind a production-grade setup, so you're not just copying config — you understand what you're doing and why.</p>
+    <hr>
+
+    <h2>The Big Picture</h2>
+    <p>When your app runs in production, here's what happens at a high level:</p>
+    <pre><code>Internet
+  → Route53 (DNS: api.yourdomain.com → ALB)
+    → ALB (HTTPS listener, terminates SSL)
+      → Listener rule matches hostname
+        → Target group → ECS task (private subnet, port 3000)</code></pre>
+    <p>Every component in that chain has a reason for existing. Let's walk through them.</p>
+    <hr>
+
+    <h2>VPC — Your Private Network</h2>
+    <p>The first thing Terraform creates is a VPC (Virtual Private Cloud). It's your isolated network inside AWS — nothing gets in or out unless you explicitly allow it.</p>
+    <p>You pick a CIDR block like <code>10.0.0.0/16</code>. That gives you 65,536 IP addresses to distribute across everything you'll run.</p>
+    <p><strong>Why does this matter?</strong> Without a VPC, your EC2 instances and databases would be hanging out on the public internet. The VPC is the hard boundary that keeps your infrastructure private.</p>
+
+    <h3>Subnets — Splitting the Network</h3>
+    <p>A VPC is one big IP range. Subnets split it into smaller pieces for different purposes. The key split is <strong>public vs private</strong>:</p>
+    <pre><code>| Subnet           | AZ          | CIDR           | What lives here        |
+|------------------|-------------|----------------|------------------------|
+| Public Subnet A  | us-east-1a  | 10.0.1.0/24    | ALB, NAT Gateway       |
+| Public Subnet B  | us-east-1b  | 10.0.2.0/24    | ALB (redundancy)       |
+| Private Subnet A | us-east-1a  | 10.0.10.0/24   | ECS tasks, RDS         |
+| Private Subnet B | us-east-1b  | 10.0.20.0/24   | ECS tasks, RDS         |</code></pre>
+    <p>Two things to notice: your app containers run in private subnets — not directly reachable from the internet. And you span two AZs — if one AWS data center goes down, you're still running in the other.</p>
+
+    <h3>Internet Gateway (IGW)</h3>
+    <p>Attaches to your VPC and gives public subnets internet access — both inbound and outbound. Without this, your VPC is completely isolated. Nothing works.</p>
+
+    <h3>NAT Gateway</h3>
+    <p>Here's the problem: your ECS tasks are in private subnets. They can't be reached from the internet (good), but they also can't <em>reach</em> the internet — which means they can't pull Docker images from ECR, call external APIs, or send logs to CloudWatch.</p>
+    <p>The NAT Gateway solves this. It sits in a public subnet and acts as a translator:</p>
+    <pre><code>ECS Task (private subnet, IP: 10.0.10.5)
+  → NAT Gateway (public subnet)
+    → Internet Gateway
+      → External service</code></pre>
+    <p>When your container makes an outbound request, NAT replaces its private IP with a public one, forwards the request, and maps the response back. The internet sees the NAT's IP, not your container's.</p>
+    <p><strong>Why not just put containers in public subnets?</strong> You could — but then your containers are directly reachable from the internet. A misconfigured security group and you've accidentally exposed something you shouldn't. Private subnets are a defense-in-depth choice.</p>
+    <p><strong>The cost</strong>: ~$32/month per NAT Gateway. This is the one unavoidable cost in a proper network setup.</p>
+
+    <h3>Route Tables</h3>
+    <p>Route tables tell traffic where to go. Every subnet has one.</p>
+    <p><strong>Public subnet:</strong> traffic within <code>10.0.0.0/16</code> stays in the VPC; everything else goes to the Internet Gateway.</p>
+    <p><strong>Private subnet:</strong> traffic within <code>10.0.0.0/16</code> stays in the VPC; everything else goes to the NAT Gateway.</p>
+
+    <h3>What Actually Leaves the VPC?</h3>
+    <p>Understanding this matters for both cost and security:</p>
+    <pre><code>| Traffic                          | Leaves VPC?   | Why                                    |
+|----------------------------------|---------------|----------------------------------------|
+| ECS → RDS                        | No            | Both inside the VPC                    |
+| ECS → another ECS via ALB        | No            | ALB is inside the VPC                  |
+| ECS → SQS                        | Yes (via NAT) | SQS is an AWS managed service          |
+| ECS → ECR (pull image)           | Yes (via NAT) | ECR is outside your VPC                |
+| ECS → CloudWatch (logs)          | Yes (via NAT) | CloudWatch is outside your VPC         |
+| ECS → third-party API            | Yes (via NAT) | No alternative                         |</code></pre>
+    <p>The pattern: resources <em>you deployed</em> inside the VPC (RDS, ElastiCache) stay private. AWS managed services (SQS, ECR, CloudWatch) live outside your VPC and cost NAT data transfer to reach. If those charges add up, VPC PrivateLink lets you route that traffic privately — but that's a later optimization.</p>
+    <hr>
+
+    <h2>ECS — Running Your Containers</h2>
+    <p>ECS (Elastic Container Service) is AWS's container orchestration platform. It answers: given this Docker image, run it somewhere and keep it running.</p>
+
+    <h3>ECS Cluster</h3>
+    <p>Just a <strong>logical namespace</strong>. No compute, no cost. You give it a name and ECS knows which group of services belongs together.</p>
+    <pre><code>resource "aws_ecs_cluster" "main" {
+  name = "my-cluster"
+}</code></pre>
+
+    <h3>EC2 vs Fargate</h3>
+    <p>ECS runs containers on either EC2 instances (you manage the machines) or Fargate (AWS manages the machines, you pay per task). This setup uses <strong>EC2</strong> — here's why:</p>
+    <ul>
+      <li><strong>Cost:</strong> On a shared EC2 instance, you pay for capacity whether it's used or not — but that capacity can serve multiple containers. Fargate charges per container. For a monitoring stack + app on one cluster, EC2 is significantly cheaper.</li>
+      <li><strong>Control:</strong> EC2 lets you tune instance types, placement, and capacity sharing.</li>
+    </ul>
+    <p>The trade-off: you have to think about instance capacity. Fargate is simpler but more expensive at this scale.</p>
+
+    <h3>Auto Scaling Group (ASG)</h3>
+    <p>This is the actual fleet of EC2 machines your containers run on. The <strong>Launch Template</strong> defines what each machine looks like:</p>
+    <ul>
+      <li>AMI: <code>amazon-linux-2-ecs-optimized</code> — Amazon's image with the ECS agent pre-installed</li>
+      <li>Instance type: <code>t3.medium</code> (2 vCPU, 4GB RAM)</li>
+      <li><strong>User data</strong> — the critical bit:</li>
+    </ul>
+    <pre><code>#!/bin/bash
+echo "ECS_CLUSTER=my-cluster" >> /etc/ecs/ecs.config</code></pre>
+    <p>This one line is how an EC2 instance knows which ECS cluster to join. When the instance boots, the ECS agent reads this file and registers itself with the right cluster.</p>
+    <p>The <strong>ASG</strong> manages the fleet: min/max/desired counts, spreads instances across both private subnets (multi-AZ), and scales when ECS needs more capacity.</p>
+
+    <h3>Capacity Provider</h3>
+    <p>Links the ECS cluster to your ASG. This enables <strong>managed scaling</strong> — if ECS needs to run a task but no instance has available resources, the capacity provider tells the ASG to launch a new instance. When load drops, it scales back in. Without a capacity provider, you'd manage instance count manually.</p>
+
+    <h3>ECR — Your Private Docker Registry</h3>
+    <p>ECR (Elastic Container Registry) is where your Docker images live. Your GitHub Actions workflow builds the image and pushes it to ECR. When ECS deploys, it pulls from there.</p>
+    <p><strong>Why not Docker Hub?</strong> ECR is private by default, it's inside AWS (faster pulls, no egress if you use PrivateLink), and IAM controls access — the same role system you use for everything else. Each service gets its own ECR repository, tagged with the Git commit SHA so you can always trace exactly which code is running.</p>
+    <hr>
+
+    <h2>ALB — The Entry Point for All Traffic</h2>
+    <p>The Application Load Balancer sits in your public subnets and is the single entry point for all HTTP/HTTPS traffic.</p>
+
+    <h3>Why One ALB for Everything?</h3>
+    <p>You could give every service its own ALB, but that's $16/month each. With one ALB, you route to multiple services using <strong>listener rules</strong> — rules that look at the hostname and forward to the right service:</p>
+    <pre><code>api.yourdomain.com     → backend-patterns-ts target group
+grafana.yourdomain.com → Grafana target group</code></pre>
+    <p>Same ALB, same IP, different services. The ALB figures out where to send each request.</p>
+
+    <h3>Listeners</h3>
+    <p>The ALB has two listeners:</p>
+    <ul>
+      <li><strong>Port 80 (HTTP):</strong> Redirects to 443. Always. You don't want unencrypted traffic.</li>
+      <li><strong>Port 443 (HTTPS):</strong> Terminates SSL and forwards to target groups.</li>
+    </ul>
+
+    <h3>Target Groups</h3>
+    <p>A target group is a set of destinations — in this case, ECS tasks. Each service has its own target group with a health check path. ECS tasks that fail health checks get pulled from rotation automatically.</p>
+
+    <h3>SSL Termination</h3>
+    <p>The ALB holds your SSL certificate and decrypts HTTPS traffic. Your containers never see HTTPS — they receive plain HTTP on port 3000.</p>
+    <pre><code>User (HTTPS) → ALB (decrypts here) → ECS Task (plain HTTP, port 3000)</code></pre>
+    <p>Your app code doesn't handle SSL, you don't install certs on containers, and the ALB is already managing the connection — might as well do encryption there.</p>
+
+    <h3>Security Groups</h3>
+    <p>This is where the "private subnet" story becomes concrete:</p>
+    <p><strong>ALB security group:</strong> inbound on 80 and 443 from <code>0.0.0.0/0</code> (the internet can reach the ALB), outbound to everything within the VPC.</p>
+    <p><strong>EC2 instance security group:</strong> inbound from the ALB security group <em>only</em> — nothing else. Outbound to everything.</p>
+    <p>Your EC2 instances are completely unreachable from the internet. The <em>only</em> way to send traffic to them is through the ALB. If someone finds your instance's IP and tries to connect directly — the security group drops it.</p>
+    <hr>
+
+    <h2>IAM — Who Can Do What</h2>
+    <p>IAM is the permission system. It answers: is this thing allowed to do that? In this setup there are two important roles.</p>
+
+    <h3>EC2 Instance Profile</h3>
+    <p>The EC2 machines need permissions to: register with ECS, pull images from ECR, write logs to CloudWatch, and read SSM parameters. This is attached via an <strong>IAM instance profile</strong> — the machines get a role with exactly those permissions, nothing more.</p>
+
+    <h3>ECS Task Role</h3>
+    <p>Each ECS service also gets its own IAM role, separate from the instance role. Your app might need to send messages to SQS, read from S3, or access Secrets Manager. The task role carries those permissions. When your code uses the AWS SDK, it automatically picks up the task role credentials — no access keys, no secrets in environment variables.</p>
+    <p><strong>Why separate task role from instance role?</strong> Least privilege. Your app shouldn't have permission to register ECS instances or pull images — that's the machine's job. If your app is compromised, a scoped task role limits what an attacker can reach.</p>
+    <hr>
+
+    <h2>Route53 + ACM — DNS and SSL</h2>
+
+    <h3>Route53</h3>
+    <p>Route53 is AWS's DNS service. It translates <code>api.yourdomain.com</code> to your ALB's IP. You create a hosted zone for your domain, then ALIAS records for each subdomain pointing to the ALB. All subdomains hit the same ALB — listener rules sort out where each goes.</p>
+    <p>You can buy the domain anywhere (Namecheap, Google Domains). You just update the domain's nameservers to point to Route53.</p>
+
+    <h3>ACM — Free SSL Certificates</h3>
+    <p>ACM (AWS Certificate Manager) issues and auto-renews SSL certificates for free. You request a <strong>wildcard certificate</strong> for <code>*.yourdomain.com</code> — one cert covers all your subdomains.</p>
+    <p>AWS validates ownership via DNS: you create a record in Route53 (Terraform does this automatically), ACM sees it and issues the cert. That record stays permanently and ACM uses it to auto-renew every year. Zero maintenance.</p>
+    <hr>
+
+    <h2>Putting It All Together</h2>
+    <p>Here's the full request lifecycle:</p>
+    <pre><code>1. User hits api.yourdomain.com
+2. Route53 resolves to ALB's IP
+3. Request hits ALB on port 443
+4. ALB decrypts HTTPS using ACM wildcard cert
+5. Listener rule matches hostname → routes to backend target group
+6. Target group picks a healthy ECS task
+7. Request reaches container on port 3000 (plain HTTP)
+8. Container processes request
+9. If it needs SQS → NAT Gateway → Internet → SQS
+10. If it needs to log → NAT Gateway → CloudWatch</code></pre>
+    <p>Every hop is intentional. Every component is doing exactly one job.</p>
+    <hr>
+
+    <h2>Cost Summary</h2>
+    <pre><code>| Component                          | Monthly Cost |
+|------------------------------------|--------------|
+| VPC, subnets, IGW, route tables    | Free         |
+| NAT Gateway                        | ~$32         |
+| ECS Cluster                        | Free         |
+| t3.medium EC2 (1 instance)         | ~$30         |
+| ALB                                | ~$16         |
+| Route53 hosted zone                | $0.50        |
+| ACM certificate                    | Free         |
+| ECR                                | ~$1          |
+| Total                              | ~$80/month   |</code></pre>
+    <p>For a production-grade platform running multiple services with HTTPS, multi-AZ, and auto-scaling — $80/month is reasonable.</p>
+    <hr>
+
+    <h2>What You Actually Own</h2>
+    <p>After all this Terraform runs, you own:</p>
+    <ul>
+      <li>A private network that's properly segmented</li>
+      <li>Containers that can't be reached directly from the internet</li>
+      <li>A single entry point (ALB) that enforces HTTPS and routes by hostname</li>
+      <li>An auto-scaling compute layer that responds to load</li>
+      <li>DNS and SSL that auto-renew and require zero maintenance</li>
+      <li>IAM roles scoped to exactly what each component needs</li>
+    </ul>
+    <p>This is the foundation that the next article builds on: wiring your GitHub Actions pipeline to actually deploy into this infrastructure.</p>
+
+    <p style="margin-top:2.5rem">← <a href="/writing/devops/2-terraform-terragrunt.html" style="color:var(--tech)">Part 2: Terraform + Terragrunt</a></p>
+    <p style="margin-bottom:3rem">→ <em style="color:var(--muted)">Part 4: Wiring Terraform + GitHub Actions (coming soon)</em></p>
+  </div>
+</main>
+
+<footer>
+  <div class="inner">
+    <span>© 2026 Harish</span>
+    <a href="https://github.com/hari328" target="_blank">GitHub</a>
+  </div>
+</footer>
+</body>
+</html>
